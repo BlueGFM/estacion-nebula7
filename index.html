@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estación Nébula-7 · Caso 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --void: #130B30;
+  --void-2: #1C1250;
+  --panel: #241a5c;
+  --panel-light: #2f2270;
+  --line: #4a3aa0;
+  --cyan: #4be7e0;
+  --amber: #ffb64c;
+  --coral: #ff7086;
+  --green: #7de8a8;
+  --text: #f5f2ff;
+  --text-dim: #b6acd9;
+  --font-display: 'Baloo 2', sans-serif;
+  --font-body: 'Nunito', sans-serif;
+  --font-mono: 'Space Mono', monospace;
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{
+  font-family: var(--font-body);
+  background: var(--void);
+  color: var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
+#stars{position:fixed; inset:0; z-index:0; pointer-events:none;}
+
+/* ---------- HEADER ---------- */
+header{
+  position:relative; z-index:2;
+  padding:18px 20px 14px;
+  display:flex; align-items:center; justify-content:space-between;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg, rgba(19,11,48,0.9), rgba(19,11,48,0.4));
+  backdrop-filter: blur(4px);
+  flex-wrap:wrap; gap:10px;
+}
+.brand{display:flex; align-items:center; gap:12px;}
+.brand .badge{
+  width:42px; height:42px; border-radius:50%;
+  background:radial-gradient(circle at 35% 30%, var(--cyan), #1a8f8a);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-display); font-weight:800; font-size:18px; color:var(--void);
+  box-shadow:0 0 18px rgba(75,231,224,.5);
+}
+.brand h1{font-family:var(--font-display); font-weight:700; font-size:20px; letter-spacing:.3px;}
+.brand .sub{font-family:var(--font-mono); font-size:11px; color:var(--text-dim); letter-spacing:1px;}
+.progress-pill{
+  font-family:var(--font-mono); font-size:12px; color:var(--void);
+  background:var(--amber); padding:6px 14px; border-radius:20px; font-weight:700;
+}
+
+/* ---------- CHISPA (mascot) ---------- */
+#chispa-wrap{
+  position:fixed; bottom:18px; right:18px; z-index:50;
+  display:flex; align-items:flex-end; gap:10px;
+}
+#chispa-bubble{
+  max-width:240px; background:var(--panel-light); border:1px solid var(--cyan);
+  border-radius:16px 16px 4px 16px; padding:12px 14px; font-size:13.5px; line-height:1.4;
+  color:var(--text); box-shadow:0 6px 20px rgba(0,0,0,.4);
+  display:none;
+}
+#chispa-bubble.show{display:block; animation:pop .25s ease;}
+@keyframes pop{from{transform:scale(.85); opacity:0} to{transform:scale(1); opacity:1}}
+#chispa{
+  width:56px; height:56px; cursor:pointer; flex-shrink:0;
+  filter:drop-shadow(0 0 10px rgba(75,231,224,.5));
+  transition:transform .15s;
+}
+#chispa:hover{transform:scale(1.08) rotate(-4deg);}
+
+/* ---------- LAYOUT ---------- */
+main{position:relative; z-index:1; max-width:920px; margin:0 auto; padding:26px 18px 100px;}
+.view{display:none;}
+.view.active{display:block; animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0; transform:translateY(8px)} to{opacity:1; transform:translateY(0)}}
+
+/* ---------- INTRO ---------- */
+.case-stamp{
+  font-family:var(--font-mono); font-size:12px; color:var(--coral); letter-spacing:2px;
+  border:1px solid var(--coral); display:inline-block; padding:4px 10px; border-radius:6px;
+  margin-bottom:14px; transform:rotate(-2deg);
+}
+.hero-title{font-family:var(--font-display); font-weight:800; font-size:clamp(28px,5vw,42px); line-height:1.15; margin-bottom:14px;}
+.hero-title span{color:var(--cyan);}
+.briefing{
+  background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px;
+  line-height:1.7; font-size:16px; color:var(--text-dim); margin-bottom:22px;
+}
+.briefing strong{color:var(--text);}
+.btn{
+  font-family:var(--font-display); font-weight:700; font-size:16px;
+  background:var(--cyan); color:var(--void); border:none; padding:14px 26px;
+  border-radius:14px; cursor:pointer; transition:transform .15s, box-shadow .15s;
+  box-shadow:0 4px 0 #1a8f8a;
+}
+.btn:hover{transform:translateY(-2px); box-shadow:0 6px 0 #1a8f8a;}
+.btn:active{transform:translateY(2px); box-shadow:0 2px 0 #1a8f8a;}
+.btn.secondary{background:var(--amber); box-shadow:0 4px 0 #b8781f;}
+.btn.secondary:hover{box-shadow:0 6px 0 #b8781f;}
+.btn.ghost{background:transparent; color:var(--cyan); border:1px solid var(--cyan); box-shadow:none;}
+.btn:disabled{opacity:.4; cursor:not-allowed; box-shadow:none; transform:none;}
+
+/* ---------- HUB / TABS ---------- */
+.tabs{display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;}
+.tab-btn{
+  font-family:var(--font-display); font-weight:700; font-size:14px;
+  background:var(--panel); color:var(--text-dim); border:1px solid var(--line);
+  padding:9px 16px; border-radius:12px; cursor:pointer;
+}
+.tab-btn.active{background:var(--panel-light); color:var(--cyan); border-color:var(--cyan);}
+
+.grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:14px;}
+.card{
+  background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:18px;
+  cursor:pointer; transition:transform .15s, border-color .15s;
+  position:relative; overflow:hidden;
+}
+.card:hover{transform:translateY(-3px); border-color:var(--cyan);}
+.card .icon{font-size:30px; margin-bottom:8px; display:block;}
+.card h3{font-family:var(--font-display); font-size:16px; margin-bottom:4px;}
+.card p{font-size:12.5px; color:var(--text-dim); line-height:1.4;}
+.card .check{
+  position:absolute; top:12px; right:12px; width:22px; height:22px; border-radius:50%;
+  background:var(--green); color:var(--void); font-size:13px; font-weight:800;
+  display:none; align-items:center; justify-content:center;
+}
+.card.done .check{display:flex;}
+.card.done{border-color:var(--green);}
+
+/* ---------- SUSPECT AVATAR (svg) ---------- */
+.avatar{width:64px; height:64px; border-radius:50%; display:block; margin-bottom:8px;}
+
+/* ---------- NOTEBOOK ---------- */
+.clue-item{
+  background:var(--panel); border-left:3px solid var(--amber); border-radius:0 12px 12px 0;
+  padding:14px 16px; margin-bottom:12px; font-size:14.5px; line-height:1.6; color:var(--text);
+}
+.clue-item .tag{font-family:var(--font-mono); font-size:11px; color:var(--amber); display:block; margin-bottom:6px; letter-spacing:1px;}
+.empty-note{color:var(--text-dim); font-style:italic; padding:20px; text-align:center;}
+
+/* ---------- MODAL ---------- */
+.overlay{
+  position:fixed; inset:0; background:rgba(10,6,26,.75); z-index:80;
+  display:none; align-items:center; justify-content:center; padding:20px;
+  backdrop-filter:blur(3px);
+}
+.overlay.show{display:flex;}
+.modal{
+  background:var(--void-2); border:1px solid var(--cyan); border-radius:20px;
+  max-width:480px; width:100%; padding:26px; box-shadow:0 20px 60px rgba(0,0,0,.5);
+  max-height:85vh; overflow-y:auto;
+}
+.modal h2{font-family:var(--font-display); font-size:22px; margin-bottom:12px; color:var(--cyan);}
+.modal p{line-height:1.7; color:var(--text); margin-bottom:16px; font-size:15px;}
+.modal-actions{display:flex; gap:10px; flex-wrap:wrap; margin-top:18px;}
+
+/* ---------- ACCUSATION ---------- */
+.suspect-pick{
+  display:flex; align-items:center; gap:14px; background:var(--panel);
+  border:2px solid var(--line); border-radius:16px; padding:14px 16px; margin-bottom:12px;
+  cursor:pointer;
+}
+.suspect-pick:hover{border-color:var(--cyan);}
+.suspect-pick.selected{border-color:var(--amber); background:var(--panel-light);}
+.suspect-pick h4{font-family:var(--font-display); font-size:15px;}
+.suspect-pick p{font-size:12.5px; color:var(--text-dim);}
+
+/* ---------- RESULT ---------- */
+.result-box{
+  text-align:center; padding:30px 20px; background:var(--panel); border-radius:20px;
+  border:1px solid var(--line);
+}
+.result-box h2{font-family:var(--font-display); font-size:30px; margin-bottom:14px;}
+.stars-row{font-size:32px; margin:10px 0 18px;}
+.confetti{position:fixed; inset:0; pointer-events:none; z-index:70; overflow:hidden;}
+.confetti span{position:absolute; top:-20px; font-size:20px; animation:fall linear forwards;}
+@keyframes fall{to{transform:translateY(110vh) rotate(400deg); opacity:.2;}}
+
+footer{
+  position:relative; z-index:1; text-align:center; padding:16px; font-size:11.5px;
+  color:var(--text-dim); font-family:var(--font-mono);
+}
+@media(max-width:520px){
+  #chispa-bubble{max-width:180px; font-size:12.5px;}
+}
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<header>
+  <div class="brand">
+    <div class="badge">N7</div>
+    <div>
+      <h1>Estación Nébula-7</h1>
+      <div class="sub">DETECTIVE THIAGO · DIVISIÓN ESTELAR</div>
+    </div>
+  </div>
+  <div class="progress-pill" id="progressPill">0 / 4 pistas</div>
+</header>
+
+<main>
+
+  <!-- INTRO VIEW -->
+  <section class="view active" id="view-intro">
+    <div class="case-stamp">CASO N.º 001 · CONFIDENCIAL</div>
+    <h1 class="hero-title">Detective <span>Thiago</span> y la Piedra Lunar</h1>
+    <div class="briefing">
+      <p><strong>Estación Nébula-7, 02:14 h.</strong> Una lluvia de meteoros cortó la luz de toda la estación durante ocho minutos. Cuando volvió la energía, la vitrina del Museo Estelar estaba rota... y la famosa <strong>Piedra Lunar Zafiro</strong> había desaparecido.</p>
+      <p style="margin-top:12px;">La Comandante llamó a <strong>Thiago</strong> — el mejor detective junior de la estación — para resolver el caso antes del amanecer. Su compañero robot, <strong>Chispa</strong>, lo va a ayudar con pistas si se traba.</p>
+      <p style="margin-top:12px;">Investiga los cuatro lugares, anota las pistas en tu libreta, y cuando estés listo... acusa al culpable.</p>
+    </div>
+    <div id="resumeBanner" style="display:none; background:var(--panel-light); border:1px solid var(--amber); border-radius:14px; padding:16px 18px; margin-bottom:18px;">
+      <p style="color:var(--amber); font-weight:700; margin-bottom:4px;">📓 Tienes una investigación guardada</p>
+      <p id="resumeText" style="color:var(--text-dim); font-size:14px; margin-bottom:0;"></p>
+    </div>
+    <button class="btn" onclick="goHub()" id="mainActionBtn">🔍 Comenzar investigación</button>
+  </section>
+
+  <!-- HUB VIEW -->
+  <section class="view" id="view-hub">
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="locations" onclick="switchTab('locations')">🗺️ Lugares</button>
+      <button class="tab-btn" data-tab="suspects" onclick="switchTab('suspects')">🧑‍🚀 Sospechosos</button>
+      <button class="tab-btn" data-tab="notebook" onclick="switchTab('notebook')">📓 Libreta</button>
+    </div>
+
+    <div id="tab-locations">
+      <div class="grid" id="locationsGrid"></div>
+    </div>
+
+    <div id="tab-suspects" style="display:none;">
+      <div class="grid" id="suspectsGrid"></div>
+    </div>
+
+    <div id="tab-notebook" style="display:none;">
+      <div id="notebookList"></div>
+    </div>
+
+    <div style="margin-top:26px; text-align:center;">
+      <button class="btn secondary" id="accuseBtn" onclick="goAccuse()" disabled>⚖️ Estoy listo para acusar</button>
+      <p style="font-size:12px; color:var(--text-dim); margin-top:8px;">Reúne al menos 3 pistas antes de acusar</p>
+    </div>
+  </section>
+
+  <!-- ACCUSE VIEW -->
+  <section class="view" id="view-accuse">
+    <div class="case-stamp">MOMENTO DE LA VERDAD</div>
+    <h1 class="hero-title">¿Quién robó la <span>Piedra Lunar</span>?</h1>
+    <p style="color:var(--text-dim); margin-bottom:18px;">Elige al sospechoso y confirma tu acusación.</p>
+    <div id="accuseList"></div>
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="goHub()">← Volver a investigar</button>
+      <button class="btn secondary" id="confirmAccuseBtn" onclick="resolveCase()" disabled>Confirmar acusación</button>
+    </div>
+  </section>
+
+  <!-- RESULT VIEW -->
+  <section class="view" id="view-result">
+    <div class="result-box" id="resultBox"></div>
+  </section>
+
+</main>
+
+<footer>ESTACIÓN NÉBULA-7 · ARCHIVO DE DETECTIVE · CASO 001</footer>
+
+<!-- Chispa mascot -->
+<div id="chispa-wrap">
+  <div id="chispa-bubble"></div>
+  <svg id="chispa" onclick="chispaHint()" viewBox="0 0 100 100">
+    <circle cx="50" cy="50" r="46" fill="#2f2270" stroke="#4be7e0" stroke-width="3"/>
+    <circle cx="35" cy="45" r="9" fill="#4be7e0"/>
+    <circle cx="65" cy="45" r="9" fill="#4be7e0"/>
+    <rect x="30" y="65" width="40" height="8" rx="4" fill="#ffb64c"/>
+    <line x1="50" y1="8" x2="50" y2="20" stroke="#4be7e0" stroke-width="3"/>
+    <circle cx="50" cy="6" r="5" fill="#ff7086"/>
+  </svg>
+</div>
+
+<!-- Detail Modal -->
+<div class="overlay" id="modalOverlay">
+  <div class="modal" id="modalContent"></div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const locations = [
+  {id:'museo', icon:'🏛️', name:'Museo Estelar', desc:'Escena del robo', clueTag:'ESCENA DEL CRIMEN',
+   text:'La vitrina de cristal está rota desde AFUERA hacia ADENTRO... ¡como si algo hubiera entrado, no salido! En el piso hay huellas pegajosas de color morado brillante que se alejan del museo.'},
+  {id:'generadores', icon:'⚙️', name:'Sala de Generadores', desc:'Aquí se cortó la luz', clueTag:'SALA DE GENERADORES',
+   text:'El Mecánico Bolt estuvo aquí todo el apagón, reparando las luces. Sus herramientas tienen aceite negro — nada de morado. Pero en el piso encontrás un papelito arrugado con un dibujo de la Piedra Lunar.'},
+  {id:'cocina', icon:'🍲', name:'Cocina de la Estación', desc:'El Chef Tazoo cocinaba', clueTag:'COCINA',
+   text:'El Chef Tazoo preparaba su famosa Salsa de Nebulosa Morada durante todo el apagón — ¡toda la cocina está pegajosa y morada! Él dice que no salió de la cocina ni un segundo: tenía la olla al fuego.'},
+  {id:'casillero', icon:'🎒', name:'Casillero del Cadete Nix', desc:'Tu rival en la academia', clueTag:'CASILLERO DE NIX',
+   text:'Dentro del casillero de Nix encontrás un frasco VACÍO de Salsa de Nebulosa Morada (¡de la cocina!) y una nota que dice: "Con la Piedra Lunar de verdad, GANO la Feria de Ciencias seguro. Nadie se va a dar cuenta, la devuelvo después."'}
+];
+
+const suspects = [
+  {id:'tazoo', name:'Chef Tazoo', role:'Chef de la estación', color:'#7de8a8',
+   desc:'Cocinó toda la noche. Su cocina quedó llena de salsa morada, pero nunca salió de ahí.'},
+  {id:'bolt', name:'Mecánico Bolt', role:'Robot de mantenimiento', color:'#4be7e0',
+   desc:'Reparó las luces durante el apagón. Sus herramientas solo tienen aceite negro.'},
+  {id:'luma', name:'Dra. Luma', role:'Científica de la estación', color:'#ffb64c',
+   desc:'Estaba en su laboratorio. Necesita muestras espaciales para sus estudios.'},
+  {id:'nix', name:'Cadete Nix', role:'Tu rival en la academia', color:'#ff7086',
+   desc:'Compite contra ti en todo. Quiere ganar la Feria de Ciencias como sea.'}
+];
+
+/* ---------------- STATE ---------------- */
+let state = { foundClues: [], accused: null };
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem('nebula7-caso1-progress');
+    if(raw){ state = JSON.parse(raw); }
+  }catch(e){ /* no saved progress yet, or storage blocked */ }
+  if(state.foundClues && state.foundClues.length > 0){
+    document.getElementById('resumeBanner').style.display = 'block';
+    document.getElementById('resumeText').textContent =
+      `Ya investigaste ${state.foundClues.length} de 4 lugares. Al continuar, tu libreta va a tener esas pistas guardadas.`;
+    document.getElementById('mainActionBtn').textContent = '🔍 Continuar investigación';
+  }
+  render();
+}
+function saveState(){
+  try{ localStorage.setItem('nebula7-caso1-progress', JSON.stringify(state)); }
+  catch(e){ console.error('No se pudo guardar el progreso', e); }
+}
+
+/* ---------------- NAVIGATION ---------------- */
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function goHub(){ showView('view-hub'); switchTab('locations'); }
+function goAccuse(){
+  renderAccuseList();
+  showView('view-accuse');
+}
+function switchTab(tab){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===tab));
+  document.getElementById('tab-locations').style.display = tab==='locations' ? 'block':'none';
+  document.getElementById('tab-suspects').style.display = tab==='suspects' ? 'block':'none';
+  document.getElementById('tab-notebook').style.display = tab==='notebook' ? 'block':'none';
+}
+
+/* ---------------- RENDER ---------------- */
+function render(){
+  // locations grid
+  const lg = document.getElementById('locationsGrid');
+  lg.innerHTML = locations.map(l=>{
+    const done = state.foundClues.includes(l.id);
+    return `<div class="card ${done?'done':''}" onclick="openLocation('${l.id}')">
+      <div class="check">✓</div>
+      <span class="icon">${l.icon}</span>
+      <h3>${l.name}</h3>
+      <p>${l.desc}</p>
+    </div>`;
+  }).join('');
+
+  // suspects grid
+  const sg = document.getElementById('suspectsGrid');
+  sg.innerHTML = suspects.map(s=>`
+    <div class="card" onclick="openSuspect('${s.id}')">
+      <svg class="avatar" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="48" fill="${s.color}22" stroke="${s.color}" stroke-width="3"/>
+        <circle cx="50" cy="42" r="16" fill="${s.color}"/>
+        <path d="M20 90 Q50 60 80 90 Z" fill="${s.color}"/>
+      </svg>
+      <h3>${s.name}</h3>
+      <p>${s.role}</p>
+    </div>`).join('');
+
+  // notebook
+  const nb = document.getElementById('notebookList');
+  if(state.foundClues.length===0){
+    nb.innerHTML = `<div class="empty-note">Todavía no anotaste ninguna pista. Investiga los lugares del mapa.</div>`;
+  } else {
+    nb.innerHTML = state.foundClues.map(id=>{
+      const l = locations.find(x=>x.id===id);
+      return `<div class="clue-item"><span class="tag">${l.clueTag}</span>${l.text}</div>`;
+    }).join('');
+  }
+
+  document.getElementById('progressPill').textContent = `${state.foundClues.length} / 4 pistas`;
+  document.getElementById('accuseBtn').disabled = state.foundClues.length < 3;
+}
+
+function openLocation(id){
+  const l = locations.find(x=>x.id===id);
+  const already = state.foundClues.includes(id);
+  document.getElementById('modalContent').innerHTML = `
+    <h2>${l.icon} ${l.name}</h2>
+    <p>${l.text}</p>
+    ${already
+      ? `<p style="color:var(--green); font-weight:700;">✓ Ya anotaste esta pista en tu libreta.</p>`
+      : ``}
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeModal()">Cerrar</button>
+      ${already ? '' : `<button class="btn" onclick="collectClue('${id}')">📓 Anotar en la libreta</button>`}
+    </div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function openSuspect(id){
+  const s = suspects.find(x=>x.id===id);
+  document.getElementById('modalContent').innerHTML = `
+    <h2>${s.name}</h2>
+    <p style="color:var(--text-dim); font-family:var(--font-mono); font-size:12px; margin-bottom:10px;">${s.role.toUpperCase()}</p>
+    <p>${s.desc}</p>
+    <div class="modal-actions"><button class="btn ghost" onclick="closeModal()">Cerrar</button></div>`;
+  document.getElementById('modalOverlay').classList.add('show');
+}
+
+function closeModal(){ document.getElementById('modalOverlay').classList.remove('show'); }
+
+function collectClue(id){
+  if(!state.foundClues.includes(id)) state.foundClues.push(id);
+  saveState();
+  render();
+  closeModal();
+  chispaSay('¡Buena pista! Ya la anoté en tu libreta. 📓');
+}
+
+/* ---------------- ACCUSATION ---------------- */
+let picked = null;
+function renderAccuseList(){
+  picked = null;
+  const el = document.getElementById('accuseList');
+  el.innerHTML = suspects.map(s=>`
+    <div class="suspect-pick" id="pick-${s.id}" onclick="pickSuspect('${s.id}')">
+      <svg class="avatar" style="margin-bottom:0;" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="48" fill="${s.color}22" stroke="${s.color}" stroke-width="3"/>
+        <circle cx="50" cy="42" r="16" fill="${s.color}"/>
+        <path d="M20 90 Q50 60 80 90 Z" fill="${s.color}"/>
+      </svg>
+      <div><h4>${s.name}</h4><p>${s.role}</p></div>
+    </div>`).join('');
+  document.getElementById('confirmAccuseBtn').disabled = true;
+}
+function pickSuspect(id){
+  picked = id;
+  document.querySelectorAll('.suspect-pick').forEach(p=>p.classList.remove('selected'));
+  document.getElementById('pick-'+id).classList.add('selected');
+  document.getElementById('confirmAccuseBtn').disabled = false;
+}
+
+function resolveCase(){
+  const box = document.getElementById('resultBox');
+  if(picked === 'nix'){
+    box.innerHTML = `
+      <div class="case-stamp" style="border-color:var(--green); color:var(--green);">CASO RESUELTO</div>
+      <h2>¡Excelente trabajo, Thiago! ⭐</h2>
+      <div class="stars-row">🌟🌟🌟</div>
+      <p style="max-width:520px; margin:0 auto 16px; line-height:1.7; color:var(--text-dim);">
+        Frente a las pruebas, el Cadete Nix se quiebra: <em>"Tenía miedo de no ganar la Feria de Ciencias... quería hacer sentir orgulloso a mi papá. Usé la salsa del Chef para simular huellas de alien y así nadie sospecharía de mí. Lo siento muchísimo."</em>
+      </p>
+      <p style="max-width:520px; margin:0 auto 16px; line-height:1.7; color:var(--text-dim);">
+        Nix devuelve la Piedra Lunar y se disculpa con el Chef Tazoo. La Comandante decide darle una segunda oportunidad — y a partir de ahora, ¡Nix y tú van a preparar juntos su propio proyecto para la próxima feria!
+      </p>
+      <p style="color:var(--cyan); font-weight:700; margin-bottom:18px;">🏅 Insignia obtenida: Thiago, Detective Estrella — Nivel 1</p>
+      <button class="btn" onclick="restart()">🔁 Jugar de nuevo</button>`;
+    launchConfetti();
+  } else {
+    const s = suspects.find(x=>x.id===picked);
+    box.innerHTML = `
+      <div class="case-stamp" style="border-color:var(--coral); color:var(--coral);">NO ES SUFICIENTE</div>
+      <h2>Casi... pero no es ${s.name} 🤔</h2>
+      <p style="max-width:480px; margin:0 auto 18px; line-height:1.7; color:var(--text-dim);">
+        Revisá bien tu libreta: ¿quién tenía un motivo real para llevarse la piedra, y qué encontraste escondido en un casillero?
+      </p>
+      <button class="btn secondary" onclick="goAccuse()">Volver a intentar</button>`;
+  }
+  showView('view-result');
+}
+
+function restart(){
+  state = {foundClues:[], accused:null};
+  saveState();
+  render();
+  document.getElementById('resumeBanner').style.display = 'none';
+  document.getElementById('mainActionBtn').textContent = '🔍 Comenzar investigación';
+  showView('view-intro');
+}
+
+/* ---------------- CHISPA HINTS ---------------- */
+const hints = [
+  'Fíjate bien en las HUELLAS del museo... ¿de qué color eran?',
+  'El casillero de alguien podría esconder más que ropa espacial...',
+  'Compará: ¿el aceite de Bolt es del mismo color que las huellas?',
+  '¿Quién tenía un MOTIVO fuerte para querer la piedra?'
+];
+function chispaHint(){
+  const h = hints[Math.floor(Math.random()*hints.length)];
+  chispaSay(h);
+}
+function chispaSay(msg){
+  const b = document.getElementById('chispa-bubble');
+  b.textContent = msg;
+  b.classList.add('show');
+  clearTimeout(window._chispaTimer);
+  window._chispaTimer = setTimeout(()=>b.classList.remove('show'), 5000);
+}
+
+/* ---------------- CONFETTI ---------------- */
+function launchConfetti(){
+  const c = document.createElement('div');
+  c.className = 'confetti';
+  document.body.appendChild(c);
+  const emojis = ['⭐','🌙','✨','🪐','🌟'];
+  for(let i=0;i<40;i++){
+    const s = document.createElement('span');
+    s.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    s.style.left = Math.random()*100+'vw';
+    s.style.animationDuration = (2+Math.random()*2)+'s';
+    s.style.animationDelay = (Math.random()*1.5)+'s';
+    c.appendChild(s);
+  }
+  setTimeout(()=>c.remove(), 4500);
+}
+
+/* ---------------- STARFIELD ---------------- */
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+function initStars(){
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  stars = Array.from({length:120}, ()=>({
+    x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+    r: Math.random()*1.4+0.3, tw: Math.random()*0.02+0.005, phase: Math.random()*Math.PI*2
+  }));
+}
+function drawStars(t){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#f5f2ff';
+  stars.forEach(s=>{
+    const alpha = 0.4 + 0.6*Math.abs(Math.sin(t*s.tw + s.phase));
+    ctx.globalAlpha = alpha;
+    ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+  });
+  ctx.globalAlpha = 1;
+  requestAnimationFrame(drawStars);
+}
+window.addEventListener('resize', initStars);
+initStars(); requestAnimationFrame(drawStars);
+
+/* ---------------- INIT ---------------- */
+loadState();
+setTimeout(()=>chispaSay('¡Hola, Thiago! Soy Chispa. Tócame si necesitas una pista. 🚀'), 900);
+</script>
+</body>
+</html>
