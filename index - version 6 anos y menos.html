@@ -530,35 +530,6 @@
       line-height: 1.5;
     }
 
-    .text-input {
-      width: 100%;
-      background: var(--void-2);
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      padding: 12px;
-      color: var(--text);
-      font-family: var(--font-body);
-      font-size: 14px;
-      line-height: 1.5;
-      resize: vertical;
-      margin-bottom: 6px;
-    }
-
-    .text-input:focus {
-      outline: none;
-      border-color: var(--cyan);
-    }
-
-    .input-hint {
-      font-size: 12px;
-      color: var(--text-dim);
-      margin-bottom: 14px;
-    }
-
-    .input-hint.ok {
-      color: var(--green);
-    }
-
     /* ---------- RESULT ---------- */
     .result-box {
       text-align: center;
@@ -701,11 +672,6 @@
         <p style="color:var(--text-dim); margin-bottom:18px;">Paso 2 de 2 — ¿Qué pista de tu libreta prueba que esa
           persona miente?</p>
         <div id="evidenceList"></div>
-        <label style="display:block; margin:16px 0 8px; color:var(--cyan); font-weight:700; font-size:13px;">✍️ Explica
-          tu acusación con tus propias palabras:</label>
-        <textarea id="reasonInput" class="text-input" rows="3"
-          placeholder="¿Por qué esta persona es la culpable? Explica tu razonamiento..."></textarea>
-        <p class="input-hint" id="reasonHint">Escribe al menos una oración explicando tu razonamiento.</p>
       </div>
 
       <div class="modal-actions">
@@ -787,7 +753,7 @@
     ];
 
     /* ---------------- STATE ---------------- */
-    let state = { foundClues: [], accused: null, hintsUsed: 0, notes: {} };
+    let state = { foundClues: [], accused: null, hintsUsed: 0 };
 
     function loadState() {
       try {
@@ -854,8 +820,7 @@
       } else {
         nb.innerHTML = state.foundClues.map(id => {
           const l = locations.find(x => x.id === id);
-          const note = (state.notes && state.notes[id]) ? state.notes[id] : l.text;
-          return `<div class="clue-item"><span class="tag">${l.clueTag}</span>${note}</div>`;
+          return `<div class="clue-item"><span class="tag">${l.clueTag}</span>${l.text}</div>`;
         }).join('');
       }
 
@@ -866,28 +831,17 @@
     function openLocation(id) {
       const l = locations.find(x => x.id === id);
       const already = state.foundClues.includes(id);
-      const savedNote = (state.notes && state.notes[id]) ? state.notes[id] : '';
       document.getElementById('modalContent').innerHTML = `
     <h2>${l.icon} ${l.name}</h2>
     <p>${l.text}</p>
-    <label style="display:block; margin-bottom:8px; color:var(--cyan); font-weight:700; font-size:13px;">✍️ Escribe la pista con tus propias palabras:</label>
-    <textarea id="noteInput" class="text-input" rows="4" placeholder="¿Qué encontraste aquí? Escríbelo con tus propias palabras...">${savedNote}</textarea>
-    <p class="input-hint" id="noteHint">Escribe al menos una oración completa antes de guardar.</p>
+    ${already
+          ? `<p style="color:var(--green); font-weight:700;">✓ Ya anotaste esta pista en tu libreta.</p>`
+          : ``}
     <div class="modal-actions">
       <button class="btn ghost" onclick="closeModal()">Cerrar</button>
-      <button class="btn" id="saveNoteBtn" onclick="collectClue('${id}')" ${already ? '' : 'disabled'}>${already ? '📓 Actualizar mi pista' : '📓 Guardar en mi libreta'}</button>
+      ${already ? '' : `<button class="btn" onclick="collectClue('${id}')">📓 Anotar en la libreta</button>`}
     </div>`;
       document.getElementById('modalOverlay').classList.add('show');
-
-      const ta = document.getElementById('noteInput');
-      const hint = document.getElementById('noteHint');
-      const btn = document.getElementById('saveNoteBtn');
-      ta.addEventListener('input', () => {
-        const ok = ta.value.trim().length >= 15;
-        btn.disabled = !ok;
-        hint.textContent = ok ? '¡Se ve bien! Ya puedes guardarla.' : 'Escribe al menos una oración completa antes de guardar.';
-        hint.classList.toggle('ok', ok);
-      });
     }
 
     function openSuspect(id) {
@@ -904,16 +858,11 @@
     function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
 
     function collectClue(id) {
-      const ta = document.getElementById('noteInput');
-      const text = ta.value.trim();
-      if (text.length < 15) return;
       if (!state.foundClues.includes(id)) state.foundClues.push(id);
-      if (!state.notes) state.notes = {};
-      state.notes[id] = text;
       saveState();
       render();
       closeModal();
-      chispaSay('¡Buena pista! La guardaste en tu libreta, con tus propias palabras. 📓');
+      chispaSay('¡Buena pista! Ya la anoté en tu libreta. 📓');
     }
 
     /* ---------------- ACCUSATION (2-step: declaración + evidencia) ---------------- */
@@ -927,7 +876,6 @@
       document.getElementById('accuseStep2').style.display = 'none';
       document.getElementById('confirmAccuseBtn').style.display = 'none';
       document.getElementById('confirmAccuseBtn').disabled = true;
-      document.getElementById('reasonInput').value = '';
       renderAccuseList();
       showView('view-accuse');
     }
@@ -952,39 +900,24 @@
       document.getElementById('accuseStep2').style.display = 'block';
       document.getElementById('confirmAccuseBtn').style.display = 'inline-block';
       renderEvidenceList();
-
-      const reason = document.getElementById('reasonInput');
-      const reasonHint = document.getElementById('reasonHint');
-      reason.oninput = checkAccuseReady;
-      checkAccuseReady();
-    }
-
-    function checkAccuseReady() {
-      const reason = document.getElementById('reasonInput');
-      const reasonHint = document.getElementById('reasonHint');
-      const reasonOk = reason.value.trim().length >= 15;
-      reasonHint.textContent = reasonOk ? '¡Buen razonamiento!' : 'Escribe al menos una oración explicando tu razonamiento.';
-      reasonHint.classList.toggle('ok', reasonOk);
-      document.getElementById('confirmAccuseBtn').disabled = !(pickedClue && reasonOk);
-    }
-
-    function pickClue(id) {
-      pickedClue = id;
-      document.querySelectorAll('.evidence-pick').forEach(p => p.classList.remove('selected'));
-      document.getElementById('ev-' + id).classList.add('selected');
-      checkAccuseReady();
     }
 
     function renderEvidenceList() {
       const el = document.getElementById('evidenceList');
       el.innerHTML = state.foundClues.map(id => {
         const l = locations.find(x => x.id === id);
-        const note = (state.notes && state.notes[id]) ? state.notes[id] : l.text;
         return `<div class="evidence-pick" id="ev-${id}" onclick="pickClue('${id}')">
       <span class="tag">${l.clueTag}</span>
-      <p>${note}</p>
+      <p>${l.text}</p>
     </div>`;
       }).join('');
+    }
+
+    function pickClue(id) {
+      pickedClue = id;
+      document.querySelectorAll('.evidence-pick').forEach(p => p.classList.remove('selected'));
+      document.getElementById('ev-' + id).classList.add('selected');
+      document.getElementById('confirmAccuseBtn').disabled = false;
     }
 
     function resolveCase() {
@@ -1033,7 +966,7 @@
     }
 
     function restart() {
-      state = { foundClues: [], accused: null, hintsUsed: 0, notes: {} };
+      state = { foundClues: [], accused: null, hintsUsed: 0 };
       saveState();
       render();
       document.getElementById('resumeBanner').style.display = 'none';
